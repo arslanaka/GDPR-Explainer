@@ -4,8 +4,12 @@ from app.services.search_service import search_service
 from app.services.graph_service import graph_service
 from app.services.explainer_service import explainer_service
 from app.services.llm_factory import get_llm
+from app.services.cache_service import cache_service
 import json
 import asyncio
+import logging
+
+logger = logging.getLogger(__name__)
 
 class ChatService:
     def __init__(self):
@@ -44,11 +48,31 @@ class ChatService:
         Answer (concise, citing articles):
         """)
 
-    async def chat_stream(self, query: str, model_provider: str = None):
+    async def chat_stream(self, query: str, model_provider: str = None, language: str = "en"):
         """
-        Generator that yields streaming response chunks.
+        Generator that yields streaming response chunks with Redis caching.
         Format: JSON string per line.
+        
+        Cache Strategy:
+        - Check cache first for exact query match
+        - If hit, yield cached response immediately
+        - If miss, process query and cache successful responses
         """
+        # 1. Check cache first (cache key includes query, model, and language)
+        cache_key_params = {"model": model_provider or "openai", "lang": language}
+        cached_response = cache_service.get("chat", query, **cache_key_params)
+        
+        if cached_response:
+            logger.info(f"✅ Serving cached response for query: {query[:50]}...")
+            # Yield cached chunks
+            for chunk in cached_response.get("chunks", []):
+                yield json.dumps(chunk) + "\n"
+            return
+        
+        # 2. Cache miss - process query normally
+        logger.info(f"❌ Cache miss, processing query: {query[:50]}...")
+        response_chunks = []  # Collect chunks for caching
+        
         # Retry Logic (Max 2 attempts)
         max_retries = 2
         last_error = None
@@ -79,23 +103,36 @@ class ChatService:
                     if art_num:
                         result = explainer_service.explain_article(f"ART-{art_num}")
                         if result:
-                            yield json.dumps({
+                            chunk = {
                                 "type": "explanation",
                                 "content": result["explanation"],
                                 "related_data": result["context"]
-                            }) + "\n"
+                            }
+                            response_chunks.append(chunk)
+                            yield json.dumps(chunk) + "\n"
+                            
+                            # Cache successful explanation
+                            cache_service.set("chat", query, {"chunks": response_chunks}, **cache_key_params)
                             return
-                    yield json.dumps({"type": "error", "content": "Could not find the specified article."}) + "\n"
+                    
+                    error_chunk = {"type": "error", "content": "Could not find the specified article."}
+                    response_chunks.append(error_chunk)
+                    yield json.dumps(error_chunk) + "\n"
                     return
 
                 elif tool == "TOPIC_SEARCH":
                     topic = params.get("topic")
                     results = search_service.search(topic, limit=10)
-                    yield json.dumps({
+                    chunk = {
                         "type": "search_results",
                         "content": f"Here are the articles related to '{topic}':",
                         "results": results
-                    }) + "\n"
+                    }
+                    response_chunks.append(chunk)
+                    yield json.dumps(chunk) + "\n"
+                    
+                    # Cache search results
+                    cache_service.set("chat", query, {"chunks": response_chunks}, **cache_key_params)
                     return
 
                 elif tool == "GENERAL_QA":
@@ -104,19 +141,29 @@ class ChatService:
                     context_text = "\n\n".join([f"Article {r['article_number']} ({r['title']}):\n{r['text_snippet']}" for r in search_results])
                     
                     # Send sources first
-                    yield json.dumps({
+                    sources_chunk = {
                         "type": "sources",
                         "results": search_results
-                    }) + "\n"
+                    }
+                    response_chunks.append(sources_chunk)
+                    yield json.dumps(sources_chunk) + "\n"
 
-                    # Stream Answer
+                    # Stream Answer and collect tokens
                     qa_chain = self.qa_prompt | llm | StrOutputParser()
+                    full_answer = ""
                     
                     async for chunk in qa_chain.astream({"context": context_text, "question": params.get("query")}):
-                        yield json.dumps({
+                        token_chunk = {
                             "type": "token",
                             "content": chunk
-                        }) + "\n"
+                        }
+                        response_chunks.append(token_chunk)
+                        full_answer += chunk
+                        yield json.dumps(token_chunk) + "\n"
+                    
+                    # Cache complete response after streaming
+                    cache_service.set("chat", query, {"chunks": response_chunks}, **cache_key_params)
+                    logger.info(f"💾 Cached QA response ({len(full_answer)} chars)")
                     return
 
             except Exception as e:

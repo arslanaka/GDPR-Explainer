@@ -9,6 +9,7 @@ router = APIRouter()
 class ChatRequest(BaseModel):
     query: str
     model: Optional[str] = "openai" # "openai" or "gemini"
+    language: Optional[str] = "en"  # "en" or "de"
 
 @router.post("/chat")
 async def chat(request: ChatRequest):
@@ -16,6 +17,10 @@ async def chat(request: ChatRequest):
         raise HTTPException(status_code=400, detail="Query is required")
     
     return StreamingResponse(
-        chat_service.chat_stream(request.query, model_provider=request.model),
+        chat_service.chat_stream(
+            request.query, 
+            model_provider=request.model,
+            language=request.language
+        ),
         media_type="application/x-ndjson"
     )

@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import search, articles, explain, topics, chat
+from app.routers import search, articles, explain, topics, chat, cache
 
 app = FastAPI(title="GDPR Explainer API")
 
@@ -19,6 +19,7 @@ app.include_router(articles.router, prefix="/api", tags=["Articles"])
 app.include_router(explain.router, prefix="/api", tags=["Explain"])
 app.include_router(topics.router, prefix="/api", tags=["Topics"])
 app.include_router(chat.router, prefix="/api", tags=["Chat"])
+app.include_router(cache.router, prefix="/api", tags=["Cache"])
 
 @app.get("/")
 async def root():

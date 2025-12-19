@@ -1,18 +1,18 @@
 # New features i am working on, 
 
-# Contextual interpretation - This is where most legal teams struggle with, we're planning to automate this.
-# Risk and Impact Assesment - Based on profile, context and scenario.
+## Contextual interpretation - This is where most legal teams struggle with, we're planning to automate this.
+## Risk and Impact Assesment - Based on profile, context and scenario.
 
 
+``
+# Later to come:
 
-## Later to come:
+## Document review
+## Country Overlays
+## Cognitive memory
+## export - Reports/Assesments etc
+## confidence scoring
 
-# Document review
-# Country Overlays
-# Cognitive memory
-# export - Reports/Assesments etc
-# confidence scoring
-#
 
 
 # Compliance check list

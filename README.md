@@ -1,25 +1,45 @@
-# New features i am working on, 
+# New Features (In Progress)
 
-## Contextual interpretation - This is where most legal teams struggle with, we're planning to automate this.
-## Risk and Impact Assesment - Based on profile, context and scenario.
+## Contextual Interpretation
+- Context-aware GDPR explanations based on user profile and scenario  
+- Automates regulatory interpretation where legal teams typically struggle  
 
+## Risk and Impact Assessment
+- Evaluates GDPR risk levels for specific use cases  
+- Considers business profile, data type, and processing context  
+- Highlights potential compliance gaps and consequences  
 
-``
-# Later to come:
+---
 
-## Document review
+# Planned Features
+
+## Document Review
+- AI-assisted review of privacy policies, consent forms, and agreements  
+- Identification of missing clauses, risky language, and non-compliant sections  
+
 ## Country Overlays
-## Cognitive memory
-## export - Reports/Assesments etc
-## confidence scoring
+- Country-specific GDPR interpretations and enforcement nuances  
+- Guidance aligned with local data protection authorities  
+
+## Cognitive Memory
+- Retains relevant user context and past compliance decisions  
+- Delivers more consistent and personalized guidance over time  
+
+## Export
+- Generates structured compliance reports and assessments  
+- Supports audit readiness and internal documentation  
+
+## Confidence Scoring
+- Indicates reliability of AI responses  
+- Flags scenarios where human legal review is recommended  
+
+## Compliance Checklist
+- Actionable, step-by-step tasks derived from contextual interpretation  
+- Clear guidance on what actions are required to achieve compliance  
 
 
 
-# Compliance check list
-
-
-
-
+----
 
 
 

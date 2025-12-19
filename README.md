@@ -1,3 +1,29 @@
+# New features i am working on, 
+
+# Contextual interpretation - This is where most legal teams struggle with, we're planning to automate this.
+# Risk and Impact Assesment - Based on profile, context and scenario.
+
+
+
+## Later to come:
+
+# Document review
+# Country Overlays
+# Cognitive memory
+# export - Reports/Assesments etc
+# confidence scoring
+#
+
+
+# Compliance check list
+
+
+
+
+
+
+
+
 # GDPR Explainer - Backend API
 
 > **Note:** This is the backend repository. For the frontend, see [GDPR-Explainer-UI](https://github.com/arslanaka/GDPR-Explainer-UI-.git)
